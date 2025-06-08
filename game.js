@@ -1,6 +1,4 @@
-// 🌍 GeoWhiz Game — Final Fixed Version (Preserves all original features)
-
-// 🔄 Game State Variables
+// All your game state variables
 let countries = [];
 let currentCountry = null;
 let usedCountries = [];
@@ -15,7 +13,6 @@ let selectedRegion = "all";
 let gameDuration = 180;
 let gameEnded = false;
 
-// 🎯 DOM Elements
 const countryEl = document.getElementById("country-name");
 const flagEl = document.getElementById("flag");
 const inputEl = document.getElementById("capital-input");
@@ -23,7 +20,7 @@ const timerEl = document.getElementById("timer");
 const scoreEl = document.getElementById("score");
 const hintBtn = document.getElementById("hint-button");
 
-// 🔊 Sounds
+// 🔊 Sound effects
 const introMusic = new Audio("music/retro-game-music-245230.mp3");
 introMusic.loop = true;
 introMusic.volume = 0.4;
@@ -41,7 +38,6 @@ correctSound.volume = 0.7;
 const wrongSound = new Audio("music/zapsplat_multimedia_game_sound_negative_buzz_incorrect_wrong_113066.mp3");
 wrongSound.volume = 0.6;
 
-// 🧠 Helpers
 function cleanRegion(region) {
   return region.trim().toLowerCase();
 }
@@ -57,24 +53,18 @@ function shuffle(array) {
   }
 }
 
-// 🏠 Welcome Screen
 function showWelcome() {
   document.getElementById("about-screen").classList.add("hidden");
   document.getElementById("welcome-screen").classList.remove("hidden");
-
   gameOverMusic.pause();
-  gameOverMusic.currentTime = 0;
   introMusic.play();
   loadLeaderboard();
 }
 
-// ▶️ Start Game
 function startGame() {
   playerName = document.getElementById("player-name").value.trim();
   if (!playerName) return alert("Please enter your name!");
-
   introMusic.pause();
-  introMusic.currentTime = 0;
   gameMusic.play();
 
   const selectedTime = document.querySelector('input[name="time"]:checked').value;
@@ -87,17 +77,14 @@ function startGame() {
   streak = 0;
   hintUsed = false;
   usedCountries = [];
-  gameEnded = false;
   scoreEl.innerText = score;
   hintBtn.disabled = false;
-
-  document.getElementById("play-again")?.remove();
-  document.getElementById("result")?.remove();
   flagEl.style.display = "block";
   inputEl.style.display = "inline-block";
   document.getElementById("submit-button").style.display = "inline-block";
   document.getElementById("quit-button").style.display = "inline-block";
-
+  document.getElementById("result")?.remove();
+  document.getElementById("play-again")?.remove();
   document.getElementById("welcome-screen").classList.add("hidden");
   document.getElementById("game-screen").classList.remove("hidden");
 
@@ -110,16 +97,8 @@ function startGame() {
         c.independent === true &&
         (selectedRegion === "all" || cleanRegion(c.region) === cleanRegion(selectedRegion))
       );
-
-      // Add custom countries with multiple capitals
-      countries.push(
-        { name: { common: "South Africa" }, capital: ["Pretoria", "Cape Town", "Bloemfontein"], flags: { png: "https://flagcdn.com/w320/za.png" }, region: "Africa" },
-        { name: { common: "Sri Lanka" }, capital: ["Sri Jayawardenepura Kotte", "Colombo"], flags: { png: "https://flagcdn.com/w320/lk.png" }, region: "Asia" }
-      );
-
       shuffle(countries);
       newRound();
-
       gameTimerInterval = setInterval(() => {
         totalTimeLeft--;
         timerEl.textContent = totalTimeLeft;
@@ -131,7 +110,6 @@ function startGame() {
     });
 }
 
-// ✅ Answer Check
 function checkAnswer() {
   const userAnswer = removeAccents(inputEl.value.trim().toLowerCase());
   const correctAnswers = currentCountry.capital.map(c => removeAccents(c.toLowerCase()));
@@ -140,10 +118,7 @@ function checkAnswer() {
     streak++;
     score++;
     correctSound.play();
-    if (streak % 5 === 0) {
-      score += 2;
-      showConfetti();
-    }
+    if (streak % 5 === 0) score += 2;
     scoreEl.innerText = score;
     showResult("✅ Correct!");
   } else {
@@ -158,12 +133,14 @@ function newRound() {
   inputEl.value = "";
   document.getElementById("result")?.remove();
 
-  if (usedCountries.length === countries.length) return endGame();
+  if (usedCountries.length === countries.length) {
+    endGame();
+    return;
+  }
 
   const remaining = countries.filter(c => !usedCountries.includes(c.name.common));
   currentCountry = remaining[Math.floor(Math.random() * remaining.length)];
   usedCountries.push(currentCountry.name.common);
-
   countryEl.innerText = hardMode ? "" : currentCountry.name.common;
   flagEl.src = currentCountry.flags.png;
   flagEl.alt = `${currentCountry.name.common} flag`;
@@ -172,7 +149,8 @@ function newRound() {
 function useHint() {
   if (hintUsed) return;
   hintUsed = true;
-  showResult(`💡 Hint: Capital starts with \"${currentCountry.capital[0][0].toUpperCase()}\"`);
+  const firstLetter = currentCountry.capital[0][0];
+  showResult(`💡 Hint: Capital starts with "${firstLetter.toUpperCase()}"`);
   hintBtn.disabled = true;
 }
 
@@ -189,7 +167,9 @@ function showResult(message) {
 function showConfetti() {
   const script = document.createElement("script");
   script.src = "https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js";
-  script.onload = () => confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+  script.onload = () => {
+    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+  };
   document.body.appendChild(script);
 }
 
@@ -199,7 +179,6 @@ function endGame() {
   gameMusic.pause();
   gameOverMusic.play();
   clearInterval(gameTimerInterval);
-
   countryEl.innerText = "🏁 Time's Up!";
   flagEl.style.display = "none";
   inputEl.style.display = "none";
@@ -214,16 +193,15 @@ function endGame() {
     document.getElementById("game-screen").appendChild(resultEl);
   }
   resultEl.innerHTML = `<h2>🎉 Game Over!</h2><p>Your final score is <strong>${score}</strong></p>`;
-  resultEl.style = "padding:20px;border-radius:16px;background:#fefefe;margin-top:20px;font-size:1.2rem";
-
   showConfetti();
-  saveScore(playerName, score);
 
   const playBtn = document.createElement("button");
   playBtn.id = "play-again";
   playBtn.innerText = "🔁 Play Again";
   playBtn.onclick = () => location.reload();
   document.getElementById("game-screen").appendChild(playBtn);
+
+  saveScore(playerName, score);
 }
 
 function quitGame() {
@@ -254,16 +232,13 @@ async function loadLeaderboard() {
   const durations = [60, 180];
   const leaderboardContainer = document.getElementById("leaderboard");
   leaderboardContainer.innerHTML = "";
-
   for (const duration of durations) {
     try {
       const res = await fetch(`https://capcatcher.vercel.app/api/leaderboard?duration=${duration}`);
       const scores = await res.json();
-
       const section = document.createElement("div");
       section.innerHTML = `<h4>${duration}s Leaderboard:</h4>` +
         scores.slice(0, 5).map((s, i) => `<p>${i + 1}. ${s.name}: ${s.score}</p>`).join("");
-
       leaderboardContainer.appendChild(section);
     } catch (err) {
       console.error(`Leaderboard load error for ${duration}s:`, err);
@@ -271,10 +246,16 @@ async function loadLeaderboard() {
   }
 }
 
-inputEl.addEventListener("keyup", e => { if (e.key === "Enter") checkAnswer(); });
+inputEl.addEventListener("keyup", e => {
+  if (e.key === "Enter") checkAnswer();
+});
 document.getElementById("submit-button").addEventListener("click", checkAnswer);
-document.getElementById("player-name").addEventListener("keyup", e => { if (e.key === "Enter") startGame(); });
-document.getElementById("toggle-dark").addEventListener("click", () => document.body.classList.toggle("dark"));
+document.getElementById("player-name").addEventListener("keyup", e => {
+  if (e.key === "Enter") startGame();
+});
+document.getElementById("toggle-dark").addEventListener("click", () => {
+  document.body.classList.toggle("dark");
+});
 document.getElementById("quit-button").addEventListener("click", quitGame);
 
 window.onload = loadLeaderboard;
