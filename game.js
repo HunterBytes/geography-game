@@ -270,3 +270,44 @@ function endGame() {
   playBtn.onclick = () => location.reload();
   document.getElementById("game-screen").appendChild(playBtn);
 }
+
+// 🔹 1. Save score to Vercel API
+async function saveScore(name, score) {
+  try {
+    const res = await fetch("https://capcatcher.vercel.app/api/leaderboard", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, score }),
+    });
+
+    const data = await res.json();
+    console.log("Score saved:", data);
+  } catch (err) {
+    console.error("Failed to save score:", err);
+  }
+}
+
+// 🔹 2. Load leaderboard from Vercel API
+async function loadLeaderboard() {
+  try {
+    const res = await fetch("https://capcatcher.vercel.app/api/leaderboard");
+    const scores = await res.json();
+
+    const leaderboardHTML = scores
+      .map((s, i) => `<p>${i + 1}. ${s.name}: ${s.score}</p>`)
+      .join("");
+    document.getElementById("leaderboard").innerHTML = leaderboardHTML;
+  } catch (err) {
+    console.error("Failed to load leaderboard:", err);
+  }
+}
+
+// 🔹 3. Call this when the game ends (plug in real values)
+function endGame() {
+  const playerName = prompt("Enter your name:");
+  const playerScore = currentScore; // replace this with your actual game score variable
+  saveScore(playerName, playerScore);
+}
+
+// 🔹 4. Load leaderboard on page load
+window.onload = loadLeaderboard;
