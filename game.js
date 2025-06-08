@@ -10,6 +10,7 @@ let playerName = "";
 let hintUsed = false;
 let hardMode = false;
 let selectedRegion = "all";
+let gameDuration = 180;
 
 const countryEl = document.getElementById("country-name");
 const flagEl = document.getElementById("flag");
@@ -36,28 +37,35 @@ correctSound.volume = 0.7;
 const wrongSound = new Audio("music/zapsplat_multimedia_game_sound_negative_buzz_incorrect_wrong_113066.mp3");
 wrongSound.volume = 0.6;
 
+// 🧠 Utility Functions
 function cleanRegion(region) {
   return region.trim().toLowerCase();
 }
 
+function removeAccents(str) {
+  return str.normalize("NFD").replace(/\p{Diacritic}/gu, "").replace(/[\u0300-\u036f]/g, "");
+}
+
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+// 🏠 Welcome Screen
 function showWelcome() {
   document.getElementById("about-screen").classList.add("hidden");
   document.getElementById("welcome-screen").classList.remove("hidden");
 
-  const highscores = JSON.parse(localStorage.getItem("geogame-scores") || "[]");
-  const list = document.getElementById("highscores");
-  list.innerHTML = "";
-  highscores.forEach(entry => {
-    const li = document.createElement("li");
-    li.textContent = `${entry.name} — ${entry.score}`;
-    list.appendChild(li);
-  });
-
   gameOverMusic.pause();
   gameOverMusic.currentTime = 0;
   introMusic.play();
+
+  loadLeaderboard();
 }
 
+// 🟢 Game Start
 function startGame() {
   playerName = document.getElementById("player-name").value.trim();
   if (!playerName) return alert("Please enter your name!");
@@ -68,6 +76,7 @@ function startGame() {
 
   const selectedTime = document.querySelector('input[name="time"]:checked').value;
   totalTimeLeft = parseInt(selectedTime);
+  gameDuration = totalTimeLeft;
   hardMode = document.getElementById("hard-mode").checked;
   selectedRegion = document.getElementById("region-select").value;
 
@@ -127,45 +136,7 @@ function startGame() {
     });
 }
 
-function quitGame() {
-  gameMusic.pause();
-  clearInterval(gameTimerInterval);
-  document.getElementById("game-screen").classList.add("hidden");
-  showWelcome();
-}
-
-function removeAccents(str) {
-  return str.normalize("NFD").replace(/\p{Diacritic}/gu, "").replace(/[\u0300-\u036f]/g, "");
-}
-
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-}
-
-function newRound() {
-  inputEl.value = "";
-  document.getElementById("result")?.remove();
-
-  if (usedCountries.length === countries.length) {
-    endGame();
-    return;
-  }
-
-  const remaining = countries.filter(c => !usedCountries.includes(c.name.common));
-  currentCountry = remaining[Math.floor(Math.random() * remaining.length)];
-  usedCountries.push(currentCountry.name.common);
-
-  countryEl.innerText = hardMode ? "" : currentCountry.name.common;
-  flagEl.src = currentCountry.flags.png;
-  flagEl.alt = `${currentCountry.name.common} flag`;
-
-  gsap.from("#flag", { opacity: 0, y: -40, duration: 0.5 });
-  gsap.from("#country-name", { opacity: 0, x: -100, duration: 0.5 });
-}
-
+// 📥 Answer Submission
 function checkAnswer() {
   const userAnswer = removeAccents(inputEl.value.trim().toLowerCase());
   const correctAnswers = currentCountry.capital.map(c => removeAccents(c.toLowerCase()));
@@ -188,6 +159,27 @@ function checkAnswer() {
   }
 
   setTimeout(newRound, 2000);
+}
+
+function newRound() {
+  inputEl.value = "";
+  document.getElementById("result")?.remove();
+
+  if (usedCountries.length === countries.length) {
+    endGame();
+    return;
+  }
+
+  const remaining = countries.filter(c => !usedCountries.includes(c.name.common));
+  currentCountry = remaining[Math.floor(Math.random() * remaining.length)];
+  usedCountries.push(currentCountry.name.common);
+
+  countryEl.innerText = hardMode ? "" : currentCountry.name.common;
+  flagEl.src = currentCountry.flags.png;
+  flagEl.alt = `${currentCountry.name.common} flag`;
+
+  gsap.from("#flag", { opacity: 0, y: -40, duration: 0.5 });
+  gsap.from("#country-name", { opacity: 0, x: -100, duration: 0.5 });
 }
 
 function useHint() {
@@ -218,24 +210,12 @@ function showConfetti() {
   document.body.appendChild(script);
 }
 
-inputEl.addEventListener("keyup", e => {
-  if (e.key === "Enter") checkAnswer();
-});
-document.getElementById("submit-button").addEventListener("click", checkAnswer);
-document.getElementById("player-name").addEventListener("keyup", e => {
-  if (e.key === "Enter") startGame();
-});
-document.getElementById("toggle-dark").addEventListener("click", () => {
-  document.body.classList.toggle("dark");
-});
-document.getElementById("quit-button").addEventListener("click", quitGame);
-
 function endGame() {
   gameMusic.pause();
   gameOverMusic.play();
-
   clearInterval(gameTimerInterval);
-  countryEl.innerText = "🏋 Time's Up!";
+
+  countryEl.innerText = "🏁 Time's Up!";
   flagEl.style.display = "none";
   inputEl.style.display = "none";
   hintBtn.style.display = "none";
@@ -271,37 +251,65 @@ function endGame() {
   playBtn.onclick = () => location.reload();
   document.getElementById("game-screen").appendChild(playBtn);
 
-  saveScore(playerName, score); // ✅ save to Vercel here
+  saveScore(playerName, score);
 }
 
-// 🔹 Save score to Vercel API
+function quitGame() {
+  gameMusic.pause();
+  clearInterval(gameTimerInterval);
+  document.getElementById("game-screen").classList.add("hidden");
+  document.getElementById("welcome-screen").classList.remove("hidden");
+  introMusic.play();
+  loadLeaderboard();
+}
+
+// 🧠 Save score to Vercel
 async function saveScore(name, score) {
   try {
-    const res = await fetch("https://capcatcher.vercel.app/api/leaderboard", {
+    await fetch("https://capcatcher.vercel.app/api/leaderboard", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, score })
+      body: JSON.stringify({ name, score, duration: gameDuration })
     });
-    const data = await res.json();
-    console.log("Score saved:", data);
   } catch (err) {
     console.error("Failed to save score:", err);
   }
 }
 
-// 🔹 Load leaderboard from Vercel API
+// 🌍 Load leaderboard with sections
 async function loadLeaderboard() {
-  try {
-    const res = await fetch("https://capcatcher.vercel.app/api/leaderboard");
-    const scores = await res.json();
-    const leaderboardHTML = scores
-      .map((s, i) => `<p>${i + 1}. ${s.name}: ${s.score}</p>`)
-      .join("");
-    document.getElementById("leaderboard").innerHTML = leaderboardHTML;
-  } catch (err) {
-    console.error("Failed to load leaderboard:", err);
+  const durations = [60, 180];
+  const leaderboardContainer = document.getElementById("leaderboard");
+  leaderboardContainer.innerHTML = "";
+
+  for (const duration of durations) {
+    try {
+      const res = await fetch(`https://capcatcher.vercel.app/api/leaderboard?duration=${duration}`);
+      const scores = await res.json();
+
+      const section = document.createElement("div");
+      section.innerHTML = `<h4>${duration}s Leaderboard:</h4>` +
+        scores.slice(0, 5).map((s, i) => `<p>${i + 1}. ${s.name}: ${s.score}</p>`).join("");
+
+      leaderboardContainer.appendChild(section);
+    } catch (err) {
+      console.error(`Leaderboard load error for ${duration}s:`, err);
+    }
   }
 }
 
-// 🔹 Load leaderboard on page load
+// ⌨️ Event Listeners
+inputEl.addEventListener("keyup", e => {
+  if (e.key === "Enter") checkAnswer();
+});
+document.getElementById("submit-button").addEventListener("click", checkAnswer);
+document.getElementById("player-name").addEventListener("keyup", e => {
+  if (e.key === "Enter") startGame();
+});
+document.getElementById("toggle-dark").addEventListener("click", () => {
+  document.body.classList.toggle("dark");
+});
+document.getElementById("quit-button").addEventListener("click", quitGame);
+
+// 🚀 Auto-load leaderboard
 window.onload = loadLeaderboard;

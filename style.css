@@ -98,6 +98,32 @@ button:hover {
   border-bottom: 1px solid #ccc;
 }
 
+.leaderboard-section {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 15px;
+  max-width: 320px;
+  margin: 30px auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.dark .leaderboard-section {
+  background-color: #2a2a2a;
+  color: #ffffff;
+}
+
+.leaderboard-section h4 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.leaderboard-section p {
+  font-size: 0.95rem;
+  margin: 4px 0;
+  text-align: center;
+}
+
 .flag-belt {
   width: 100%;
   overflow: hidden;
