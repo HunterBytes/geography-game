@@ -11,6 +11,7 @@ let hintUsed = false;
 let hardMode = false;
 let selectedRegion = "all";
 let gameDuration = 180;
+let gameEnded = false;
 
 const countryEl = document.getElementById("country-name");
 const flagEl = document.getElementById("flag");
@@ -257,14 +258,22 @@ function endGame() {
 function quitGame() {
   gameMusic.pause();
   clearInterval(gameTimerInterval);
+
+  // 💥 Prevent saving on quit
+  score = 0;
+  gameDuration = 0;
+
   document.getElementById("game-screen").classList.add("hidden");
   document.getElementById("welcome-screen").classList.remove("hidden");
   introMusic.play();
   loadLeaderboard();
 }
 
+
 // 🧠 Save score to Vercel
 async function saveScore(name, score) {
+  if (score === 0 || gameDuration === 0) return; // ❌ Don't save if quit early
+
   try {
     await fetch("https://capcatcher.vercel.app/api/leaderboard", {
       method: "POST",
