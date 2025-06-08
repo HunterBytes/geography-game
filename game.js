@@ -1,3 +1,4 @@
+// All your game state variables
 let countries = [];
 let currentCountry = null;
 let usedCountries = [];
@@ -234,7 +235,7 @@ function endGame() {
   gameOverMusic.play();
 
   clearInterval(gameTimerInterval);
-  countryEl.innerText = "🏁 Time's Up!";
+  countryEl.innerText = "🏋 Time's Up!";
   flagEl.style.display = "none";
   inputEl.style.display = "none";
   hintBtn.style.display = "none";
@@ -269,17 +270,18 @@ function endGame() {
   playBtn.style.marginTop = "16px";
   playBtn.onclick = () => location.reload();
   document.getElementById("game-screen").appendChild(playBtn);
+
+  saveScore(playerName, score); // ✅ save to Vercel here
 }
 
-// 🔹 1. Save score to Vercel API
+// 🔹 Save score to Vercel API
 async function saveScore(name, score) {
   try {
     const res = await fetch("https://capcatcher.vercel.app/api/leaderboard", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, score }),
+      body: JSON.stringify({ name, score })
     });
-
     const data = await res.json();
     console.log("Score saved:", data);
   } catch (err) {
@@ -287,12 +289,11 @@ async function saveScore(name, score) {
   }
 }
 
-// 🔹 2. Load leaderboard from Vercel API
+// 🔹 Load leaderboard from Vercel API
 async function loadLeaderboard() {
   try {
     const res = await fetch("https://capcatcher.vercel.app/api/leaderboard");
     const scores = await res.json();
-
     const leaderboardHTML = scores
       .map((s, i) => `<p>${i + 1}. ${s.name}: ${s.score}</p>`)
       .join("");
@@ -302,12 +303,5 @@ async function loadLeaderboard() {
   }
 }
 
-// 🔹 3. Call this when the game ends (plug in real values)
-function endGame() {
-  const playerName = prompt("Enter your name:");
-  const playerScore = currentScore; // replace this with your actual game score variable
-  saveScore(playerName, playerScore);
-}
-
-// 🔹 4. Load leaderboard on page load
+// 🔹 Load leaderboard on page load
 window.onload = loadLeaderboard;
