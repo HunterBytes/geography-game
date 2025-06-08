@@ -1,39 +1,95 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>GeoGuesser Lite</title>
-  <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron&family=Roboto&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CAPCATCHER</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Pacifico&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <div class="container">
-    <h1>🌍 Guess the Capital</h1>
-
-    <div id="welcome-screen">
-      <input type="text" id="player-name" placeholder="Enter your name" />
-      <button onclick="startGame()">Start Game</button>
-    </div>
-
-    <div id="game-screen" class="hidden">
-      <h2 id="country-name">Loading...</h2>
-      <img id="flag" src="" alt="Country Flag">
-
-      <div class="input-wrapper">
-        <input type="text" id="capital-input" placeholder="Type the capital..." />
-        <button onclick="checkAnswer()">Submit</button>
+  <!-- About Screen -->
+  <div id="about-screen">
+    <h1 class="logo">🧠 CAPCATCHER</h1>
+    <p>This geography game was created by <strong>Hunter J</strong> — powered by code, curiosity, and caffeine ☕</p>
+    <div class="flag-belt">
+      <div class="flag-track">
+        <img src="https://flagcdn.com/w40/us.png" alt="USA" />
+        <img src="https://flagcdn.com/w40/jp.png" alt="Japan" />
+        <img src="https://flagcdn.com/w40/gb.png" alt="UK" />
+        <img src="https://flagcdn.com/w40/de.png" alt="Germany" />
+        <img src="https://flagcdn.com/w40/br.png" alt="Brazil" />
+        <img src="https://flagcdn.com/w40/kr.png" alt="South Korea" />
+        <img src="https://flagcdn.com/w40/in.png" alt="India" />
+        <img src="https://flagcdn.com/w40/fr.png" alt="France" />
+        <img src="https://flagcdn.com/w40/it.png" alt="Italy" />
+        <img src="https://flagcdn.com/w40/ca.png" alt="Canada" />
+        <img src="https://flagcdn.com/w40/au.png" alt="Australia" />
       </div>
-
-      <p>⏱️ Time left: <span id="timer">180</span>s</p>
-      <p>✅ Score: <span id="score">0</span></p>
     </div>
+    <button onclick="showWelcome()">Continue</button>
+  </div>
+
+  <!-- Welcome Screen -->
+  <div id="welcome-screen" class="hidden">
+    <h1 class="logo">🎯 CAPCATCHER</h1>
+    <p>Test your knowledge of capital cities!</p>
+
+    <input id="player-name" type="text" placeholder="Enter your name" />
+
+    <div class="option-group">
+      <label><input type="radio" name="time" value="60" /> 60s</label>
+      <label><input type="radio" name="time" value="180" checked /> 180s</label>
+    </div>
+
+    <div class="option-group">
+      <label><input type="checkbox" id="hard-mode" /> Hard Mode (Flag Only)</label>
+    </div>
+
+    <div class="option-group">
+      <label for="region-select">Select Region:</label>
+      <select id="region-select">
+        <option value="all">🌐 All</option>
+        <option value="Europe">🇪🇺 Europe</option>
+        <option value="Asia">🌏 Asia</option>
+        <option value="Africa">🌍 Africa</option>
+        <option value="Americas">🌎 Americas</option>
+        <option value="Oceania">🌊 Oceania</option>
+      </select>
+    </div>
+
+    <button onclick="startGame()">Start Game</button>
+    <button id="toggle-dark">Toggle Dark Mode</button>
 
     <div id="leaderboard">
-      <h3>🏆 Leaderboard</h3>
+      <h3>🏅 Top Scores</h3>
       <ul id="highscores"></ul>
     </div>
   </div>
 
+  <!-- Game Screen -->
+  <div id="game-screen" class="hidden">
+    <h2 id="country-name"></h2>
+    <img id="flag" />
+    <input type="text" id="capital-input" placeholder="Type capital and press Enter" />
+    <button id="submit-button">Submit</button>
+    <button id="hint-button" onclick="useHint()">💡 Hint</button>
+    <button id="quit-button">❌ Quit Game</button>
+    <p>⏱ Time left: <span id="timer">180</span></p>
+    <p>🏆 Score: <span id="score">0</span></p>
+    <div id="result"></div>
+  </div>
+
+  <!-- Hidden Audio Elements -->
+  <div style="display: none;">
+    <audio id="introMusic" src="music/retro-game-music-245230.mp3" preload="auto"></audio>
+    <audio id="gameMusic" src="music/best-game-console-301284.mp3" preload="auto" loop></audio>
+    <audio id="gameOverMusic" src="music/game-over-252897.mp3" preload="auto"></audio>
+    <audio id="wrongAnswerSound" src="music/zapsplat_multimedia_game_sound_negative_buzz_incorrect_wrong_113066.mp3" preload="auto"></audio>
+    <audio id="correctSound" src="music/zapsplat_multimedia_game_sound_coin_collect_arcade_retro_simple_bright_001_114144.mp3" preload="auto"></audio>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="game.js"></script>
 </body>
 </html>
