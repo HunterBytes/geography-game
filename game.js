@@ -20,7 +20,6 @@ const timerEl = document.getElementById("timer");
 const scoreEl = document.getElementById("score");
 const hintBtn = document.getElementById("hint-button");
 
-// 🔊 Sound effects
 const introMusic = new Audio("music/retro-game-music-245230.mp3");
 introMusic.loop = true;
 introMusic.volume = 0.4;
@@ -91,12 +90,26 @@ function startGame() {
   fetch("https://restcountries.com/v3.1/all?fields=name,capital,flags,independent,region")
     .then(res => res.json())
     .then(data => {
+      // Debug: See if any edge case slips through
+      data.forEach(c => {
+        if (
+          c.capital && c.capital.length > 1 &&
+          selectedRegion !== "all" &&
+          cleanRegion(c.region) !== cleanRegion(selectedRegion)
+        ) {
+          console.warn("Edge case country (wrong region):", c.name.common, c.region);
+        }
+      });
+
       countries = data.filter(c =>
-        c.capital && c.capital.length > 0 &&
+        c.capital &&
+        c.capital.length > 0 &&
         c.flags && c.flags.png &&
         c.independent === true &&
+        c.region &&
         (selectedRegion === "all" || cleanRegion(c.region) === cleanRegion(selectedRegion))
       );
+
       shuffle(countries);
       newRound();
       gameTimerInterval = setInterval(() => {
